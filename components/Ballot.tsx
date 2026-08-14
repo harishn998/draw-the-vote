@@ -4,9 +4,14 @@
 // and the two delivery fields.
 
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Seal } from "./Chakra";
 import { PARTIES } from "./parties";
 import { buildBallotPng } from "./ballotPng";
+
+// The bot on the other end is app/api/telegram/route.ts.
+const BOT_URL = process.env.NEXT_PUBLIC_TELEGRAM_BOT || "https://t.me/YOUR_BOT_HANDLE";
+const BOT_HANDLE = `@${BOT_URL.replace(/\/+$/, "").split("/").pop()}`;
 
 const EPILOGUE =
   "India's first general election ran from October 1951 to February 1952 — the largest exercise of its kind ever attempted anywhere. Ballot boxes travelled by elephant, camel and boat. Parties were given pictures because most voters could not read names, and that one decision is why universal adult franchise worked here from the very first vote instead of being rationed out by literacy. The pictures are still on the ballot today.";
@@ -30,9 +35,7 @@ export function Ballot({
   const millions = (votes / 1e6).toFixed(1);
 
   const [email, setEmail] = useState("");
-  const [wa, setWa] = useState("");
   const [emMsg, setEmMsg] = useState<Msg>({ text: "", kind: "" });
-  const [waMsg, setWaMsg] = useState<Msg>({ text: "", kind: "" });
   const [sending, setSending] = useState(false);
 
   async function sendEmail() {
@@ -58,16 +61,6 @@ export function Ballot({
     } finally {
       setSending(false);
     }
-  }
-
-  // No outbound WhatsApp route exists yet (app/api/wa is Twilio's INBOUND
-  // webhook). Say so rather than claim a delivery that never happened.
-  function sendWa() {
-    if (!/^\+?[\d\s-]{10,}$/.test(wa.trim())) {
-      setWaMsg({ text: "Enter a valid number", kind: "err" });
-      return;
-    }
-    setWaMsg({ text: "WhatsApp delivery is not connected yet", kind: "err" });
   }
 
   async function save() {
@@ -147,23 +140,37 @@ export function Ballot({
             <div className={`dmsg${emMsg.kind ? ` ${emMsg.kind}` : ""}`}>{emMsg.text}</div>
           </div>
           <div className="dcell">
-            <div className="dt">WhatsApp</div>
+            <div className="dt">Play it on paper</div>
             <div className="dd">
-              Same paper, straight to your phone. Sandbox numbers only — join first.
+              Draw the symbols with an actual pen. Photograph them. The Commission writes back.
             </div>
-            <div className="dfield">
-              <input
-                type="tel"
-                placeholder="+91 98765 43210"
-                aria-label="WhatsApp number"
-                value={wa}
-                onChange={(e) => setWa(e.target.value)}
-              />
-              <button type="button" className="btn sm" onClick={sendWa}>
-                Send
-              </button>
+            {/* The QR sits on a sheet-white block — a code on the navy will not scan. */}
+            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ background: "var(--sheet)", padding: 10, width: "fit-content" }}>
+                <QRCodeSVG
+                  value={BOT_URL}
+                  size={120}
+                  bgColor="#FFFDF7"
+                  fgColor="#14120C"
+                  title={`Telegram bot ${BOT_HANDLE}`}
+                />
+              </div>
+              <a
+                href={BOT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="dt"
+                style={{
+                  color: "var(--fg)",
+                  opacity: 0.8,
+                  textDecoration: "underline",
+                  textUnderlineOffset: 3,
+                  width: "fit-content",
+                }}
+              >
+                {BOT_HANDLE}
+              </a>
             </div>
-            <div className={`dmsg${waMsg.kind ? ` ${waMsg.kind}` : ""}`}>{waMsg.text}</div>
           </div>
         </div>
       </div>
