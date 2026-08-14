@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Draw the Vote — 176 million voters. Most of them cannot read.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ── THEME: Chakra navy (default) ── */
+  --bg:#101A3D; --bg2:#17224C;
+  --fg:#EFE9DA; --line:#EFE9DA;
+  --sheet:#FFFDF7; --on-sheet:#14120C;
+  --saffron:#F2822F; --green:#3FB184; --accent:#8B9CE0;
+  --noise-blend:overlay; --noise-op:.07;
+
+  --f:'Poppins',system-ui,sans-serif;
+  --pad:clamp(14px,3.2vw,44px);
+  --t-hero:clamp(33px,6.2vw,66px);
+  --t-h2:clamp(20px,2.9vw,29px);
+  --t-big:clamp(36px,6.6vw,64px);
+  --t-lede:clamp(15px,1.65vw,17.5px);
+  --t-body:15.5px; --t-lbl:10.5px; --t-micro:9.5px;
+}
+[data-theme="forest"]{
+  --bg:#06291C; --bg2:#0B3626;
+  --fg:#EFE9DA; --line:#EFE9DA;
+  --saffron:#F5883A; --green:#7FD9AE; --accent:#C7B27A;
+  --noise-blend:overlay; --noise-op:.07;
+}
+[data-theme="cream"]{
+  --bg:#F3EDE0; --bg2:#FFFDF7;
+  --fg:#14120C; --line:#14120C;
+  --saffron:#E2601B; --green:#0D6845; --accent:#1A2A6B;
+  --noise-blend:multiply; --noise-op:.04;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;border-radius:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--f);
+  font-size:var(--t-body);line-height:1.6;font-weight:400;
+  min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  transition:background .5s ease,color .5s ease;
+}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:95;
+ opacity:var(--noise-op);mix-blend-mode:var(--noise-blend);
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ══ entrance ══ */
+.wipe{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;pointer-events:none}
+.wipe i{flex:1;transform:scaleX(0);transform-origin:left}
+.wipe i:nth-child(1){background:var(--saffron);animation:sweep 1.5s cubic-bezier(.76,0,.24,1) 0s forwards}
+.wipe i:nth-child(2){background:#FFFDF7;animation:sweep 1.5s cubic-bezier(.76,0,.24,1) .09s forwards}
+.wipe i:nth-child(3){background:var(--green);animation:sweep 1.5s cubic-bezier(.76,0,.24,1) .18s forwards}
+@keyframes sweep{0%{transform:scaleX(0);transform-origin:left}42%{transform:scaleX(1);transform-origin:left}
+ 50%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+.chakra{position:fixed;right:-16vw;top:8vh;width:56vw;height:56vw;z-index:0;opacity:.09;
+ pointer-events:none;animation:turn 260s linear infinite;color:var(--accent)}
+@keyframes turn{to{transform:rotate(360deg)}}
+.rv{display:block;overflow:hidden}
+.rv>span{display:block;transform:translateY(108%);animation:rise .95s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes rise{to{transform:none}}
+.fade{opacity:0;animation:fin .8s ease forwards}
+@keyframes fin{to{opacity:1}}
+
+/* ══ header ══ */
+header{display:flex;align-items:center;gap:12px;padding:11px var(--pad);border-bottom:3px solid var(--line);
+ flex-wrap:wrap;position:sticky;top:0;background:var(--bg);z-index:30;transition:background .5s}
+.bars{display:flex;height:14px;width:32px;border:1px solid var(--line);overflow:hidden}
+.bars i{flex:1;transform:scaleY(0);transform-origin:bottom;animation:bar .5s cubic-bezier(.2,1.4,.4,1) forwards}
+.bars i:nth-child(2){animation-delay:.08s}.bars i:nth-child(3){animation-delay:.16s}
+@keyframes bar{to{transform:none}}
+.mast{font-size:17px;font-weight:700;letter-spacing:-.035em}
+.pips{display:flex;gap:3px;margin-left:12px}
+.pip{width:16px;height:4px;background:color-mix(in srgb,var(--fg) 18%,transparent);transition:background .4s}
+.pip.done{background:var(--green)}.pip.now{background:var(--saffron)}
+.hm{font-size:var(--t-micro);letter-spacing:.16em;text-transform:uppercase;font-weight:500;opacity:.6}
+.themes{display:flex;gap:5px;margin-left:10px}
+.th{width:19px;height:19px;border:2px solid var(--line);cursor:pointer;padding:0;opacity:.45;transition:.2s}
+.th:hover{opacity:.85}
+.th.on{opacity:1;transform:scale(1.14)}
+.cnt{margin-left:auto;text-align:right;line-height:1.15}
+.cnt b{font-size:clamp(18px,3.2vw,28px);font-weight:700;letter-spacing:-.03em;display:block;
+ font-variant-numeric:tabular-nums;transition:color .5s}
+.cnt span{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;opacity:.55}
+
+.wrap{max-width:1120px;margin:0 auto;padding:clamp(22px,3.6vw,42px) var(--pad) 66px;position:relative;z-index:5}
+.scene{display:none}.scene.on{display:block}
+.tag{font-size:var(--t-lbl);letter-spacing:.22em;text-transform:uppercase;font-weight:600;
+ display:inline-block;border:2px solid currentColor;padding:5px 11px;margin-bottom:16px}
+h1{font-size:var(--t-hero);font-weight:700;line-height:1.0;letter-spacing:-.038em}
+h2{font-size:var(--t-h2);font-weight:600;line-height:1.15;letter-spacing:-.025em}
+.lede{margin-top:19px;max-width:56ch;font-size:var(--t-lede);line-height:1.7;font-weight:300;opacity:.86}
+.lede em{font-style:normal;font-weight:600;opacity:1;color:var(--saffron)}
+
+.btn{background:var(--fg);color:var(--bg);border:3px solid var(--fg);cursor:pointer;font-family:var(--f);
+ font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:13px 25px;font-weight:600;
+ transition:background .2s,border-color .2s,transform .2s,color .2s}
+.btn:hover:not(:disabled){background:var(--saffron);border-color:var(--saffron);color:#14120C;transform:translateY(-2px)}
+.btn.sm{padding:8px 14px;font-size:10.5px}
+.btn.gh{background:none;color:var(--fg);border-color:var(--line)}
+.btn.gh:hover:not(:disabled){background:var(--fg);color:var(--bg)}
+.btn:disabled{opacity:.26;cursor:not-allowed}
+.btns{margin-top:24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.brief{border:3px solid var(--line);padding:17px 20px;animation:fin .5s ease both;background:var(--bg2)}
+.brief .p{font-size:var(--t-lbl);letter-spacing:.22em;text-transform:uppercase;font-weight:600;opacity:.55}
+.brief h2{margin-top:7px}
+.brief .v{margin-top:9px;font-size:15px;font-weight:300;opacity:.85;max-width:70ch;line-height:1.65}
+.brief .rule{margin-top:13px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--fg) 22%,transparent);
+ font-size:11.5px;letter-spacing:.06em;font-weight:500;color:var(--saffron);text-transform:uppercase}
+
+/* ══ studio ══ */
+.studio{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:16px;margin-top:16px;align-items:start}
+@media(max-width:880px){.studio{grid-template-columns:1fr}}
+.pad{border:3px solid var(--line);background:var(--sheet);color:var(--on-sheet);position:relative;
+ touch-action:none;overflow:hidden;animation:fin .6s .1s ease both}
+.pad::before{content:'';position:absolute;inset:0;pointer-events:none;
+ background-image:linear-gradient(rgba(20,18,12,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(20,18,12,.05) 1px,transparent 1px);
+ background-size:34px 34px}
+.pad canvas{display:block;width:100%;height:auto;cursor:crosshair;position:relative;z-index:1}
+.pad .hint{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:2;
+ font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;opacity:.24}
+.tray{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;align-items:center;border:3px solid var(--line);padding:8px 9px}
+.nib{width:32px;height:32px;border:2px solid var(--line);background:none;cursor:pointer;display:grid;place-items:center;transition:.16s}
+.nib:hover{background:color-mix(in srgb,var(--fg) 10%,transparent)}
+.nib.on{background:var(--fg)}
+.nib i{display:block;background:var(--fg);border-radius:50%;transition:background .16s}
+.nib.on i{background:var(--bg)}
+.trayspace{margin-left:auto}
+
+.rail{display:flex;flex-direction:column;gap:13px}
+.panel{border:3px solid var(--line);animation:fin .6s .2s ease both}
+.panel:nth-child(2){animation-delay:.3s}.panel:nth-child(3){animation-delay:.4s}
+.ph{font-size:var(--t-micro);letter-spacing:.2em;text-transform:uppercase;font-weight:600;
+ padding:9px 11px;border-bottom:3px solid var(--line);opacity:.7}
+.squint{padding:14px;display:flex;gap:13px;align-items:center;background:var(--sheet);color:var(--on-sheet)}
+.squint canvas{width:56px;height:56px;border:1px solid var(--on-sheet);background:#fff;flex:none}
+.squint .sx{font-size:10px;line-height:1.6;font-weight:400;opacity:.68}
+.gauge{padding:13px;background:var(--bg2)}
+.gbar{height:9px;background:color-mix(in srgb,var(--fg) 16%,transparent);overflow:hidden}
+.gbar i{display:block;height:100%;width:0;background:var(--saffron);
+ transition:width .4s cubic-bezier(.2,.9,.2,1),background .4s}
+.gtxt{margin-top:9px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;line-height:1.7;min-height:2.6em}
+.slots{display:grid;grid-template-columns:1fr 1fr;background:var(--sheet);color:var(--on-sheet)}
+.slot{border-right:1px solid var(--on-sheet);border-bottom:1px solid var(--on-sheet);aspect-ratio:1;
+ display:grid;place-items:center;position:relative}
+.slot img{width:80%;height:80%;object-fit:contain}
+.slot .e{font-size:8.5px;letter-spacing:.12em;font-weight:500;opacity:.2}
+.slot .nm{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:7.5px;
+ letter-spacing:.03em;font-weight:500;opacity:.5;padding:0 2px}
+.slot.new{animation:stamp .6s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes stamp{0%{transform:scale(1.8) rotate(-8deg);opacity:0}60%{transform:scale(.95) rotate(1.5deg);opacity:1}100%{transform:none}}
+
+/* ══ readings ══ */
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(206px,1fr));margin-top:19px;border:3px solid var(--line)}
+.rd{padding:16px 15px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+ min-height:122px;transition:background .5s;background:var(--bg2)}
+.rd .who{font-size:var(--t-micro);letter-spacing:.14em;text-transform:uppercase;font-weight:600;opacity:.55}
+.rd .saw{margin-top:9px;font-size:17.5px;font-weight:600;letter-spacing:-.02em;line-height:1.25}
+.rd .vd{margin-top:10px;font-size:var(--t-micro);letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+.rd.wait .saw{opacity:.3;font-size:11.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase}
+.rd.wait .saw::after{content:'';animation:dots 1.3s steps(4) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+.rd.ok{background:color-mix(in srgb,var(--green) 20%,var(--bg2))}.rd.ok .vd{color:var(--green)}
+.rd.no{background:color-mix(in srgb,var(--saffron) 20%,var(--bg2))}.rd.no .vd{color:var(--saffron)}
+.rd.in{animation:pop .45s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes pop{from{opacity:0;transform:translateY(9px) scale(.98)}to{opacity:1;transform:none}}
+
+.score{margin-top:19px;border:4px solid var(--line);padding:21px;display:flex;gap:19px;flex-wrap:wrap;
+ align-items:center;animation:pop .5s .1s cubic-bezier(.2,1.2,.3,1) both}
+.score .big{font-size:var(--t-big);font-weight:700;letter-spacing:-.045em;line-height:.95}
+.score .lb{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:500;opacity:.72;max-width:27ch;line-height:1.8}
+.score.good{border-color:var(--green)}.score.good .big{color:var(--green)}
+.score.bad{border-color:var(--saffron)}.score.bad .big{color:var(--saffron)}
+.note{margin-top:15px;border-left:5px solid var(--accent);padding:3px 0 3px 16px;font-size:14px;
+ line-height:1.7;font-weight:300;opacity:.86;max-width:66ch;animation:fin .6s .25s ease both}
+.note b{font-size:var(--t-micro);letter-spacing:.2em;text-transform:uppercase;font-weight:600;display:block;margin-bottom:6px;opacity:.65}
+
+
+/* ══ TRICOLOUR PRELOADER ══ */
+.pre{position:fixed;inset:0;z-index:250;background:var(--bg);display:grid;place-items:center;
+ opacity:0;pointer-events:none;transition:opacity .32s ease}
+.pre.run{opacity:1;pointer-events:all}
+.pre-bands{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:180px;display:flex;
+ flex-direction:column;opacity:.13}
+.pre-bands i{flex:1;transform:scaleX(0);transform-origin:left}
+.pre.run .pre-bands i:nth-child(1){background:var(--saffron);animation:pband 1.1s cubic-bezier(.6,0,.3,1) infinite}
+.pre.run .pre-bands i:nth-child(2){background:#FFFDF7;animation:pband 1.1s cubic-bezier(.6,0,.3,1) .1s infinite}
+.pre.run .pre-bands i:nth-child(3){background:var(--green);animation:pband 1.1s cubic-bezier(.6,0,.3,1) .2s infinite}
+@keyframes pband{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}
+ 55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+.pre-wheel{width:116px;height:116px;position:relative;z-index:2;overflow:visible}
+.pre-wheel .ring{fill:none;stroke:url(#tri);stroke-width:2.2;stroke-linecap:round;
+ stroke-dasharray:327;stroke-dashoffset:327}
+.pre.run .pre-wheel .ring{animation:draw 1.15s cubic-bezier(.5,0,.2,1) infinite}
+@keyframes draw{0%{stroke-dashoffset:327}55%{stroke-dashoffset:0}100%{stroke-dashoffset:-327}}
+.pre-wheel .sp{stroke:url(#tri);stroke-width:1.5;opacity:0;transform-origin:60px 60px}
+.pre.run .pre-wheel .sp{animation:spk 1.15s ease-in-out infinite}
+@keyframes spk{0%,100%{opacity:0;transform:scale(.55)}45%{opacity:.95;transform:scale(1)}}
+.pre-wheel .hub{fill:var(--saffron)}
+.pre.run .pre-wheel{animation:turn 3.4s linear infinite}
+.pre-txt{position:absolute;bottom:calc(50% - 108px);left:0;right:0;text-align:center;z-index:2;
+ font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;font-weight:600;opacity:.62}
+.pre-txt::after{content:'';animation:dots 1.2s steps(4) infinite}
+
+/* ══ deliver ══ */
+.deliver{margin-top:21px;border:3px solid var(--line)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;background:var(--bg2)}
+@media(max-width:700px){.dgrid{grid-template-columns:1fr}}
+.dcell{padding:18px 19px;border-right:1px solid var(--line)}
+.dcell:last-child{border-right:none}
+.dcell .dt{font-size:var(--t-lbl);letter-spacing:.2em;text-transform:uppercase;font-weight:600;opacity:.6}
+.dcell .dd{margin-top:7px;font-size:13.5px;font-weight:300;opacity:.8;line-height:1.6;min-height:3.2em}
+.dfield{display:flex;gap:7px;margin-top:12px;border-bottom:2px solid var(--line);padding-bottom:7px}
+.dfield input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--fg);
+ font-family:var(--f);font-size:14px;padding:5px 0;font-weight:400}
+.dfield input::placeholder{opacity:.35}
+.dmsg{margin-top:10px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;min-height:1.4em}
+.dmsg.ok{color:var(--green)}.dmsg.err{color:var(--saffron)}
+
+/* ══ ballot ══ */
+.ballot{border:5px solid var(--line);background:var(--sheet);color:var(--on-sheet);margin-top:21px;position:relative}
+.bt{padding:17px 20px;border-bottom:4px solid var(--on-sheet);text-align:center;position:relative}
+.bt .t1{font-size:var(--t-micro);letter-spacing:.28em;text-transform:uppercase;font-weight:500;opacity:.6}
+.bt .t2{font-size:clamp(17px,2.6vw,24px);font-weight:700;letter-spacing:-.02em;margin-top:5px}
+.seal{position:absolute;top:13px;right:15px;width:46px;height:46px;opacity:.7;animation:turn 90s linear infinite}
+.brow{display:flex;align-items:center;gap:13px;padding:12px 17px;border-bottom:1px solid var(--on-sheet);
+ animation:pop .5s cubic-bezier(.2,1.2,.3,1) both}
+.brow:last-child{border-bottom:none}
+.brow img{width:54px;height:54px;object-fit:contain;border:1px solid var(--on-sheet);background:#fff;flex:none}
+.brow .pn{font-size:15px;font-weight:600;letter-spacing:-.02em}
+.brow .pr{font-size:10px;letter-spacing:.04em;font-weight:400;opacity:.56;margin-top:2px}
+.brow .pc{margin-left:auto;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;text-align:right;line-height:1.6}
+.brow .pc b{display:block;font-size:19px;font-weight:700;letter-spacing:-.03em}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));margin-top:21px;border:3px solid var(--line)}
+.st{padding:17px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
+.st b{font-size:26px;font-weight:700;letter-spacing:-.035em;display:block}
+.st span{font-size:var(--t-micro);letter-spacing:.13em;text-transform:uppercase;font-weight:500;opacity:.6;display:block;margin-top:5px;line-height:1.65}
+
+footer{border-top:3px solid var(--line);padding:14px var(--pad);font-size:var(--t-micro);letter-spacing:.14em;
+ text-transform:uppercase;font-weight:500;opacity:.5;position:relative;z-index:5}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .rv>span{transform:none}.fade{opacity:1}.wipe{display:none}
+}
+:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+</style>
+</head>
+<body data-theme="chakra">
+
+
+<div class="pre" id="pre" aria-hidden="true">
+  <div class="pre-bands"><i></i><i></i><i></i></div>
+  <svg class="pre-wheel" viewBox="0 0 120 120" fill="none">
+    <defs><linearGradient id="tri" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F2822F"/><stop offset="50%" stop-color="#FFFDF7"/><stop offset="100%" stop-color="#3FB184"/>
+    </linearGradient></defs>
+    <circle class="ring" cx="60" cy="60" r="52"/>
+    <g id="pw"></g>
+    <circle class="hub" cx="60" cy="60" r="5"/>
+  </svg>
+  <div class="pre-txt" id="preTxt">Printing</div>
+</div>
+
+<div class="wipe"><i></i><i></i><i></i></div>
+<svg class="chakra" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+  <circle cx="100" cy="100" r="94" stroke="currentColor" stroke-width="1"/>
+  <circle cx="100" cy="100" r="10" stroke="currentColor" stroke-width="1"/>
+  <g id="ch" stroke="currentColor" stroke-width=".85"></g>
+</svg>
+
+<header>
+  <span class="bars"><i style="background:#E2601B"></i><i style="background:#F3EDE0"></i><i style="background:#0D6845"></i></span>
+  <span class="mast">Draw the Vote</span>
+  <span class="pips" id="pips"></span>
+  <span class="themes">
+    <button class="th on" data-t="chakra" title="Chakra navy" style="background:#101A3D"></button>
+    <button class="th" data-t="forest" title="Deep green" style="background:#06291C"></button>
+    <button class="th" data-t="cream" title="Khadi cream" style="background:#F3EDE0"></button>
+  </span>
+  <span class="hm" id="hm">Election Commission · 1951</span>
+  <span class="cnt"><b id="votes">0</b><span>votes reaching the right box</span></span>
+</header>
+
+<div class="wrap">
+
+<section class="scene on" id="s0">
+  <span class="tag fade" style="animation-delay:1.15s">India · 1951</span>
+  <h1>
+    <span class="rv"><span style="animation-delay:1.2s">Draw it so</span></span>
+    <span class="rv"><span style="animation-delay:1.31s">they cannot</span></span>
+    <span class="rv"><span style="animation-delay:1.42s">get it wrong.</span></span>
+  </h1>
+  <p class="lede fade" style="animation-delay:1.7s">India is about to hold the largest election ever attempted. A hundred and seventy-six million people may vote, and roughly eighty-five in every hundred cannot read a ballot paper.<br><br>No country had ever given everyone the vote at once. Every other democracy used reading as a reason to withhold it. India's answer was to change the ballot instead — so no party gets a name. Every party gets a <em>picture</em>.<br><br>You have to draw them. Six of them. And each new one must be impossible to confuse with every symbol already on the paper.</p>
+  <div class="btns fade" style="animation-delay:1.95s"><button class="btn" id="start">Take the first brief →</button></div>
+</section>
+
+<section class="scene" id="sr">
+  <span class="tag" id="rtag"></span>
+  <div class="brief">
+    <div class="p" id="bp"></div><h2 id="bn"></h2>
+    <div class="v" id="bv"></div><div class="rule" id="br"></div>
+  </div>
+
+  <div class="studio">
+    <div>
+      <div class="pad">
+        <canvas id="cv" width="880" height="600"></canvas>
+        <div class="hint" id="hint">Draw the symbol here</div>
+      </div>
+      <div class="tray">
+        <button class="nib on" data-w="7" title="Fine"><i style="width:6px;height:6px"></i></button>
+        <button class="nib" data-w="15" title="Medium"><i style="width:11px;height:11px"></i></button>
+        <button class="nib" data-w="28" title="Bold"><i style="width:18px;height:18px"></i></button>
+        <button class="btn gh sm" id="undo">Undo</button>
+        <button class="btn gh sm" id="clear">Clear</button>
+        <span class="trayspace"></span>
+        <button class="btn sm" id="submit" disabled>Send it to the printer →</button>
+      </div>
+    </div>
+    <div class="rail">
+      <div class="panel">
+        <div class="ph">At ballot size</div>
+        <div class="squint">
+          <canvas id="sq" width="56" height="56"></canvas>
+          <span class="sx">This is how big your symbol actually prints. If you can't tell what it is here, neither can they.</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph">Legibility</div>
+        <div class="gauge">
+          <div class="gbar"><i id="gfill"></i></div>
+          <div class="gtxt" id="gtxt">Nothing drawn yet.</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph">On the ballot paper</div>
+        <div class="slots" id="slots"></div>
+      </div>
+    </div>
+  </div>
+  <div id="out"></div>
+</section>
+
+<section class="scene" id="se">
+  <span class="tag">Polling day · 1952</span>
+  <h1 id="eh"></h1>
+  <div class="ballot">
+    <div class="bt">
+      <svg class="seal" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="#1A2A6B" stroke-width=".8"/><circle cx="24" cy="24" r="16" stroke="#1A2A6B" stroke-width=".8"/><circle cx="24" cy="24" r="2.2" fill="#1A2A6B"/><g id="sp" stroke="#1A2A6B" stroke-width=".55"></g></svg>
+      <div class="t1">Ballot paper · General Election · Drawn by hand</div>
+      <div class="t2" id="serial"></div>
+    </div>
+    <div id="brows"></div>
+  </div>
+  <div class="stats" id="estats"></div>
+  <p class="lede" id="epi"></p>
+  <div class="deliver">
+    <div class="ph">Send it to yourself</div>
+    <div class="dgrid">
+      <div class="dcell">
+        <div class="dt">Email</div>
+        <div class="dd">Your ballot paper, printed as a PNG, delivered to any inbox.</div>
+        <div class="dfield"><input id="em" type="email" placeholder="you@example.com" aria-label="Email"><button class="btn sm" id="emBtn">Send</button></div>
+        <div class="dmsg" id="emMsg"></div>
+      </div>
+      <div class="dcell">
+        <div class="dt">WhatsApp</div>
+        <div class="dd">Same paper, straight to your phone. Sandbox numbers only — join first.</div>
+        <div class="dfield"><input id="wa" type="tel" placeholder="+91 98765 43210" aria-label="WhatsApp number"><button class="btn sm" id="waBtn">Send</button></div>
+        <div class="dmsg" id="waMsg"></div>
+      </div>
+    </div>
+  </div>
+  <div class="btns">
+    <button class="btn" id="save">Save my ballot paper</button>
+    <button class="btn gh" id="again">Run the election again</button>
+  </div>
+</section>
+
+</div>
+<footer>Draw the Vote · Build for India · Games &amp; history · Parties are invented. The election was real.</footer>
+
+<script>
+const $=i=>document.getElementById(i);
+const spokes=(el,r1,r2,c)=>{let d='';for(let i=0;i<24;i++){const a=i*15*Math.PI/180;
+ d+=`M${c+r1*Math.cos(a)} ${c+r1*Math.sin(a)}L${c+r2*Math.cos(a)} ${c+r2*Math.sin(a)}`;}el.innerHTML=`<path d="${d}"/>`;};
+spokes($('ch'),10,94,100);spokes($('sp'),2.2,16,24);
+(()=>{let g='';for(let i=0;i<24;i++){const a=i*15;
+ g+=`<line class="sp" x1="60" y1="14" x2="60" y2="52" transform="rotate(${a} 60 60)" style="animation-delay:${(i%12)*.035}s"/>`;}
+ $('pw').innerHTML=g;})();
+
+const PARTIES=[
+ {n:'The Cultivators\' League',p:'Brief 01',v:'Rice farmers across north Bihar. Nine in ten cannot read. Most have never seen a printed page that was not a summons.',
+  want:['a bullock cart','a plough','a sheaf of grain','an ox'],rule:'First symbol. Nothing on the paper to clash with yet.',
+  wrong:['a chair','some kind of animal','a broken fence','a boat','a house falling down']},
+ {n:'The Weavers\' Association',p:'Brief 02',v:'Handloom towns in the Tamil country. These voters work with their hands all day and read almost nothing.',
+  want:['a spinning wheel','a loom','a spindle','a roll of cloth'],rule:'Must not be mistaken for the Cultivators\' symbol.',
+  wrong:['a cartwheel','a well','the sun','a cage','a bicycle']},
+ {n:'The Fishermen\'s Front',p:'Brief 03',v:'The Malabar coast. Voters who have spent their whole lives looking at exactly one horizon.',
+  want:['a boat','a fishing net','a fish','an anchor'],rule:'Two on the paper. Yours must be unmistakable beside both.',
+  wrong:['a leaf','a slipper','a knife','a bird','a bow']},
+ {n:'The Hill Peoples\' Party',p:'Brief 04',v:'Kumaon. Scattered villages, and a polling station four hours\' walk from anywhere.',
+  want:['a mountain','a pine tree','a goat','a river'],rule:'Three on the paper. The margin for confusion is narrowing.',
+  wrong:['a tent','a pile of stones','an arrow','a hut','a flame']},
+ {n:'The Railway Workers\' Union',p:'Brief 05',v:'Jamalpur and Kharagpur. Shift workers, mixed literacy, and they will vote in large blocks.',
+  want:['a train','a railway signal','a length of track','a lamp'],rule:'Four on the paper. Anything round will now collide with the Weavers.',
+  wrong:['a box','a ladder','a comb','a table','a bench']},
+ {n:'The Women\'s Welfare Party',p:'Brief 06',v:'Every province, town and village. Many of these voters are registering under their own name for the first time in their lives.',
+  want:['an oil lamp','a water pot','an open hand','a tree'],rule:'Five on the paper. This is the hardest one.',
+  wrong:['a spoon','a mushroom','a flower','a bell','a jug']}
+];
+const VILLAGERS=[{n:'Sukhdev, 61',p:'Chapra, Bihar'},{n:'Meenakshi, 34',p:'Kumbakonam'},
+ {n:'Abdul, 47',p:'Kozhikode'},{n:'Devki, 52',p:'Almora'}];
+
+let round=0,votes=0,board=[],hits=0,busy=false;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── ink ── */
+const cv=$('cv'),cx=cv.getContext('2d'),sq=$('sq'),sqx=sq.getContext('2d');
+let drawing=false,strokes=[],cur=null,W=7;
+function redraw(){
+  cx.fillStyle='#FFFDF7';cx.fillRect(0,0,cv.width,cv.height);
+  cx.lineCap='round';cx.lineJoin='round';cx.strokeStyle='#14120C';cx.fillStyle='#14120C';
+  strokes.forEach(s=>{
+    const p=s.pts;
+    if(p.length<2){cx.beginPath();cx.arc(p[0][0],p[0][1],s.w/2,0,7);cx.fill();return;}
+    for(let i=1;i<p.length;i++){
+      const sp=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);
+      cx.lineWidth=Math.max(s.w*.55,s.w*(1-Math.min(.42,sp/95)));
+      const mx=(p[i-1][0]+p[i][0])/2,my=(p[i-1][1]+p[i][1])/2;
+      cx.beginPath();
+      if(i===1)cx.moveTo(p[0][0],p[0][1]);
+      else{const px=(p[i-2][0]+p[i-1][0])/2,py=(p[i-2][1]+p[i-1][1])/2;cx.moveTo(px,py);}
+      cx.quadraticCurveTo(p[i-1][0],p[i-1][1],mx,my);cx.stroke();
+    }
+  });
+  $('hint').style.display=strokes.length?'none':'grid';
+  sqx.fillStyle='#fff';sqx.fillRect(0,0,56,56);sqx.drawImage(cv,0,0,56,56);
+  gauge();$('submit').disabled=!strokes.length||busy;
+}
+function metrics(){
+  let len=0,minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  strokes.forEach(s=>s.pts.forEach((p,i)=>{
+    if(i)len+=Math.hypot(p[0]-s.pts[i-1][0],p[1]-s.pts[i-1][1]);
+    minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);
+  }));
+  return{len,area:strokes.length?((maxX-minX)*(maxY-minY))/(cv.width*cv.height):0,
+    n:strokes.length,avgW:strokes.length?strokes.reduce((a,s)=>a+s.w,0)/strokes.length:0};
+}
+function legibility(){
+  const m=metrics();if(!m.n)return{v:0,t:'Nothing drawn yet.'};
+  let v=.5,t=[];
+  if(m.area<.06){v-=.3;t.push('Too small on the page');}else if(m.area>.2)v+=.22;
+  if(m.avgW<9){v-=.2;t.push('Lines too fine to print');}else if(m.avgW>=15)v+=.2;
+  if(m.n>13||m.len>8500){v-=.28;t.push('Too much detail — it fills in at this size');}
+  else if(m.n<=8&&m.len>900)v+=.25;
+  if(m.len<420){v-=.25;t.push('Not enough shape to recognise');}
+  v=Math.max(.04,Math.min(1,v));
+  if(!t.length)t.push(v>.75?'Bold and simple. This will read.':'Readable, but push it bolder.');
+  return{v,t:t.join(' · ')};
+}
+function gauge(){
+  const g=legibility();
+  $('gfill').style.width=(g.v*100)+'%';
+  $('gfill').style.background=g.v>.7?'var(--green)':g.v>.42?'var(--navy)':'var(--saffron)';
+  $('gtxt').textContent=g.t;
+}
+function pos(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width*cv.width,(e.clientY-r.top)/r.height*cv.height];}
+cv.addEventListener('pointerdown',e=>{if(busy)return;cv.setPointerCapture(e.pointerId);drawing=true;cur={w:W,pts:[pos(e)]};strokes.push(cur);redraw();});
+cv.addEventListener('pointermove',e=>{if(!drawing)return;cur.pts.push(pos(e));redraw();});
+cv.addEventListener('pointerup',()=>{drawing=false;cur=null;});
+cv.addEventListener('pointercancel',()=>{drawing=false;cur=null;});
+document.querySelectorAll('.nib').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.nib').forEach(x=>x.classList.remove('on'));b.classList.add('on');W=+b.dataset.w;});
+$('undo').onclick=()=>{strokes.pop();redraw();};
+$('clear').onclick=()=>{strokes=[];redraw();};
+
+/* MOCK reader — gpt-4o vision replaces this */
+function read(){
+  const P=PARTIES[round],base=Math.min(.94,legibility().v+.06);
+  return VILLAGERS.map(v=>{
+    const ok=Math.random()<base;
+    return{v,ok,saw:ok?P.want[Math.floor(Math.random()*P.want.length)]:P.wrong[Math.floor(Math.random()*P.wrong.length)]};
+  });
+}
+/* animated counter */
+function tick(to){
+  const el=$('votes'),from=parseFloat(el.textContent)||0,t0=performance.now();
+  if(reduce){el.textContent=to.toFixed(1)+'M';return;}
+  (function step(t){
+    const k=Math.min(1,(t-t0)/900),e=1-Math.pow(1-k,3);
+    el.textContent=(from+(to-from)*e).toFixed(1)+'M';
+    if(k<1)requestAnimationFrame(step);
+  })(t0);
+}
+function slots(newIdx){
+  $('slots').innerHTML=PARTIES.map((p,i)=>
+    `<div class="slot ${i===newIdx?'new':''}">${board[i]?`<img src="${board[i]}" alt="">`:'<span class="e">EMPTY</span>'}
+     <span class="nm">${board[i]?p.n.replace(/^The /,''):''}</span></div>`).join('');
+}
+function pips(){$('pips').innerHTML=PARTIES.map((_,i)=>`<span class="pip ${i<round?'done':i===round?'now':''}"></span>`).join('');}
+function swap(id){document.querySelectorAll('.scene').forEach(x=>x.classList.remove('on'));$(id).classList.add('on');scrollTo({top:0,behavior:'instant'});}
+function show(id,label){
+  if(reduce){swap(id);return;}
+  $('preTxt').textContent=label||'Printing';
+  $('pre').classList.add('run');
+  setTimeout(()=>{swap(id);setTimeout(()=>$('pre').classList.remove('run'),260);},760);
+}
+
+function renderRound(){
+  const P=PARTIES[round];busy=false;
+  $('rtag').textContent=`Brief ${round+1} of 6`;
+  $('hm').textContent=`Brief ${round+1} · Election Commission · 1951`;
+  $('bp').textContent=P.p;$('bn').textContent=P.n;$('bv').textContent=P.v;$('br').textContent=P.rule;
+  strokes=[];redraw();$('out').innerHTML='';pips();slots(-1);show('sr','Sending the next brief');
+}
+
+$('submit').onclick=()=>{
+  if(!strokes.length||busy)return;busy=true;$('submit').disabled=true;
+  const rs=read();
+  $('out').innerHTML=`<div class="reads">${VILLAGERS.map(v=>
+    `<div class="rd wait"><div class="who">${v.n} · ${v.p}</div><div class="saw">Looking</div><div class="vd">&nbsp;</div></div>`).join('')}</div>`;
+  const cards=[...document.querySelectorAll('.rd')];
+  rs.forEach((r,i)=>setTimeout(()=>{
+    cards[i].className='rd in '+(r.ok?'ok':'no');
+    cards[i].innerHTML=`<div class="who">${r.v.n} · ${r.v.p}</div>
+      <div class="saw">&ldquo;${r.saw}&rdquo;</div>
+      <div class="vd">${r.ok?'Voted correctly':'Wrong box'}</div>`;
+    if(i===rs.length-1)finishRound(rs);
+  },reduce?0:560+i*700));
+};
+
+function finishRound(rs){
+  const got=rs.filter(r=>r.ok).length;
+  votes+=Math.round(29_000_000*got/4);hits+=got;
+  board[round]=cv.toDataURL('image/png');
+  tick(votes/1e6);
+  $('votes').style.color=got>=3?'var(--green)':'var(--saffron)';
+  setTimeout(()=>$('votes').style.color='',1100);
+  slots(round);
+  $('out').insertAdjacentHTML('beforeend',`
+    <div class="score ${got>=3?'good':'bad'}">
+      <span class="big">${got}/4</span>
+      <span class="lb">${got===4?'Every one of them found the right box.':got>=3?'Most got there. One did not.':got>=2?'Half these voters marked the wrong party.':'Almost nobody recognised it. Those votes are gone.'}</span>
+    </div>
+    <div class="note"><b>What actually happened</b>${got>=3
+      ?'The symbols that worked in 1951 were bold, simple and large — a bullock cart, a hut, a lamp, a pair of bullocks. Detail was the enemy, because the printed symbol was about the size of a postage stamp.'
+      :'Symbols that were faint, fussy, or close to another party\'s were the biggest single cause of misvoting. The Commission redrew a great many of them before polling opened.'}</div>
+    <div class="btns"><button class="btn" id="nx">${round<5?'Next brief →':'Open the polls →'}</button></div>`);
+  $('nx').onclick=()=>{round++;round<6?renderRound():finish();};
+}
+
+function finish(){
+  const pct=Math.round(hits/24*100);pips();
+  $('eh').innerHTML=pct>=75?'The paper held.':pct>=45?'It mostly worked.':'Too many marks went astray.';
+  $('serial').textContent='No. '+(100000+Math.floor(Math.random()*899999));
+  $('brows').innerHTML=PARTIES.map((p,i)=>`
+    <div class="brow" style="animation-delay:${i*.09}s"><img src="${board[i]}" alt="Symbol for ${p.n}">
+      <div><div class="pn">${p.n}</div><div class="pr">${p.v.split('.')[0]}</div></div>
+      <div class="pc"><b>${i+1}</b>on the paper</div></div>`).join('');
+  $('estats').innerHTML=[
+    [(votes/1e6).toFixed(1)+'M','votes reached the party they were meant for'],
+    [pct+'%','of your symbols were read correctly'],
+    ['176M','entitled to vote in 1951'],['~85%','who could not read the paper']
+  ].map(s=>`<div class="st"><b>${s[0]}</b><span>${s[1]}</span></div>`).join('');
+  $('epi').textContent='India\'s first general election ran from October 1951 to February 1952 — the largest exercise of its kind ever attempted anywhere. Ballot boxes travelled by elephant, camel and boat. Parties were given pictures because most voters could not read names, and that one decision is why universal adult franchise worked here from the very first vote instead of being rationed out by literacy. The pictures are still on the ballot today.';
+  show('se','Opening the polls');
+}
+
+$('save').onclick=()=>{
+  const c=document.createElement('canvas'),g=c.getContext('2d');
+  c.width=760;c.height=980;g.fillStyle='#FFFDF7';g.fillRect(0,0,760,980);
+  g.strokeStyle='#14120C';g.lineWidth=8;g.strokeRect(4,4,752,972);
+  g.fillStyle='#14120C';g.textAlign='center';g.font='700 28px Poppins, sans-serif';
+  g.fillText('BALLOT PAPER · DRAWN BY HAND',380,70);
+  g.font='500 13px Poppins, sans-serif';g.fillText('GENERAL ELECTION · 1952',380,98);
+  g.lineWidth=4;g.beginPath();g.moveTo(24,124);g.lineTo(736,124);g.stroke();
+  let y=146,done=0;
+  PARTIES.forEach((p,i)=>{
+    const im=new Image();
+    im.onload=()=>{
+      g.drawImage(im,40,y+8,120,110);
+      g.strokeStyle='#14120C';g.lineWidth=2;g.strokeRect(40,y+8,120,110);
+      g.fillStyle='#14120C';g.textAlign='left';g.font='600 21px Poppins, sans-serif';
+      g.fillText(p.n,184,y+56);
+      g.font='400 12px Poppins, sans-serif';g.fillStyle='#5A5348';
+      g.fillText(String(i+1)+' on the paper',184,y+82);
+      g.strokeStyle='#14120C';g.lineWidth=1;g.beginPath();g.moveTo(24,y+128);g.lineTo(736,y+128);g.stroke();
+      if(++done===6){const a=document.createElement('a');a.download='my-ballot-paper.png';a.href=c.toDataURL();a.click();}
+    };
+    im.src=board[i];y+=136;
+  });
+};
+function deliver(inp,msg,kind){
+  const v=$(inp).value.trim();
+  const m=$(msg);
+  const valid = kind==='email' ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) : /^\+?[\d\s-]{10,}$/.test(v);
+  if(!valid){m.className='dmsg err';m.textContent=kind==='email'?'Enter a valid email':'Enter a valid number';return;}
+  m.className='dmsg';m.textContent='Sending…';
+  setTimeout(()=>{m.className='dmsg ok';
+    m.textContent=kind==='email'?'Sent. Check your inbox.':'Sent to WhatsApp.';},900);
+}
+$('emBtn').onclick=()=>deliver('em','emMsg','email');
+$('waBtn').onclick=()=>deliver('wa','waMsg','whatsapp');
+$('start').onclick=()=>renderRound();
+$('again').onclick=()=>{round=0;votes=0;hits=0;board=[];$('votes').textContent='0';show('s0','Resetting the roll');};
+redraw();pips();
+document.querySelectorAll('.th').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.th').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');document.body.dataset.theme=b.dataset.t;
+});
+setTimeout(()=>document.querySelector('.wipe')?.remove(),2200);
+</script>
+</body>
+</html>
