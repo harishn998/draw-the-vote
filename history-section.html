@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How India Voted — Draw the Vote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#101A3D;--bg2:#17224C;--fg:#EFE9DA;--line:#EFE9DA;
+  --sheet:#FFFDF7;--on-sheet:#14120C;
+  --saffron:#F2822F;--green:#3FB184;--accent:#8B9CE0;
+  --f:'Poppins',system-ui,sans-serif;--pad:clamp(14px,3.2vw,44px);
+  --t-lbl:10.5px;--t-micro:9.5px;
+  --p:0;
+}
+*{box-sizing:border-box;margin:0;padding:0;border-radius:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--f);font-size:15.5px;line-height:1.6;
+ -webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:1040px;margin:0 auto;padding:0 var(--pad)}
+
+.timeline{display:grid;grid-template-columns:42px minmax(0,1fr)}
+@media(max-width:820px){.timeline{grid-template-columns:1fr}.rail{display:none}}
+.rail{position:relative}
+.rail::before{content:'';position:absolute;left:11px;top:0;bottom:0;width:2px;background:rgba(239,233,218,.14)}
+.rail::after{content:'';position:absolute;left:11px;top:0;width:2px;height:calc(var(--p) * 100%);
+ background:linear-gradient(180deg,var(--saffron) 0%,var(--sheet) 50%,var(--green) 100%);transition:height .25s linear}
+.node{position:absolute;left:4px;width:16px;height:16px;border:2px solid rgba(239,233,218,.25);
+ background:var(--bg);transition:border-color .5s,background .5s,transform .5s}
+.node.lit{border-color:var(--saffron);background:var(--saffron);transform:scale(1.18)}
+.col{min-width:0}
+
+.intro{padding:clamp(58px,10vh,116px) 0 clamp(26px,5vh,52px)}
+.tag{font-size:var(--t-lbl);letter-spacing:.22em;text-transform:uppercase;font-weight:600;
+ display:inline-block;border:2px solid currentColor;padding:5px 11px;margin-bottom:18px}
+h1{font-size:clamp(32px,6.2vw,64px);font-weight:700;line-height:1.02;letter-spacing:-.038em}
+h1 .o{color:var(--saffron)}
+.lede{margin-top:20px;max-width:56ch;font-size:clamp(15px,1.6vw,17.5px);line-height:1.75;font-weight:300;opacity:.86}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:32px;border:3px solid var(--line)}
+.st{padding:16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
+.st b{font-size:23px;font-weight:700;letter-spacing:-.035em;display:block;font-variant-numeric:tabular-nums}
+.st span{font-size:var(--t-micro);letter-spacing:.13em;text-transform:uppercase;font-weight:500;opacity:.6;display:block;margin-top:5px;line-height:1.6}
+
+.era{padding:clamp(44px,8vh,88px) 0;border-top:3px solid var(--line);position:relative}
+.yr{font-size:clamp(52px,11vw,116px);font-weight:800;letter-spacing:-.065em;line-height:.82;
+ color:var(--saffron);opacity:0;position:absolute;top:clamp(28px,5vh,58px);right:0;pointer-events:none;
+ transform:translateX(26px);transition:opacity 1s cubic-bezier(.2,.9,.2,1),transform 1s cubic-bezier(.2,.9,.2,1)}
+.in .yr{opacity:.16;transform:none}
+.kick{font-size:var(--t-lbl);letter-spacing:.24em;text-transform:uppercase;font-weight:600;color:var(--accent)}
+.era h2{font-size:clamp(25px,4.2vw,42px);font-weight:700;letter-spacing:-.03em;line-height:1.06;margin-top:9px;max-width:16ch}
+.txt{margin-top:16px;max-width:52ch;font-weight:300;opacity:.86;line-height:1.75}
+.txt b{font-weight:600;opacity:1}
+
+.rv{opacity:0;transform:translateY(24px);transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1)}
+.in .rv{opacity:1;transform:none}
+.in .rv.d1{transition-delay:.10s}
+.in .rv.d2{transition-delay:.20s}
+
+.stage{margin-top:28px;border:3px solid var(--line);background:var(--bg2);padding:clamp(20px,3.6vw,40px);
+ display:grid;place-items:center;min-height:270px;overflow:hidden;position:relative}
+svg{width:100%;max-width:560px;height:auto;overflow:visible}
+.paper{fill:var(--sheet)}
+.ink{stroke:var(--on-sheet);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.boxline{stroke:var(--fg);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.boxfill{fill:var(--bg)}
+.lbl{fill:var(--fg);font-family:var(--f);font-size:9px;letter-spacing:.16em;font-weight:600;text-transform:uppercase;opacity:.55}
+
+.draw{stroke-dasharray:var(--l,700);stroke-dashoffset:var(--l,700)}
+.in .draw{animation:dash 1.15s cubic-bezier(.5,0,.2,1) forwards}
+.in .draw.s1{animation-delay:.10s}
+.in .draw.s2{animation-delay:.24s}
+.in .draw.s3{animation-delay:.38s}
+@keyframes dash{to{stroke-dashoffset:0}}
+.fadein{opacity:0}
+.in .fadein{animation:fi .8s ease .9s forwards}
+@keyframes fi{to{opacity:1}}
+
+.slip{opacity:0}
+.in .slip{animation:drop 5.5s cubic-bezier(.5,0,.5,1) 1.5s infinite}
+@keyframes drop{0%{opacity:0;transform:translateY(-64px)}6%{opacity:1;transform:translateY(-56px)}
+ 26%{opacity:1;transform:translateY(6px)}33%{opacity:0;transform:translateY(16px)}100%{opacity:0;transform:translateY(-64px)}}
+.in .chosen{animation:glow 5.5s ease 1.5s infinite}
+@keyframes glow{0%,20%{stroke:var(--fg)}30%,42%{stroke:var(--saffron)}55%,100%{stroke:var(--fg)}}
+
+.stamp{opacity:0;transform-origin:center}
+.in .stamp{animation:slam 5.5s cubic-bezier(.3,1.7,.4,1) 1.6s infinite}
+@keyframes slam{0%{opacity:0;transform:translateY(-52px) scale(2)}10%{opacity:1;transform:translateY(0) scale(1)}
+ 70%{opacity:1;transform:translateY(0) scale(1)}78%,100%{opacity:0}}
+.rowhi{fill:var(--saffron);opacity:0}
+.in .rowhi{animation:hi 5.5s ease 1.6s infinite}
+@keyframes hi{0%,5%{opacity:0}12%,70%{opacity:.15}80%,100%{opacity:0}}
+
+.btnled{fill:var(--saffron);opacity:0}
+.in .btnled{animation:led 5s ease 1.5s infinite}
+@keyframes led{0%,14%{opacity:0}20%{opacity:1}55%{opacity:1}64%,100%{opacity:0}}
+.press{transform-origin:center}
+.in .press{animation:press 5s ease 1.5s infinite}
+@keyframes press{0%,14%{transform:translateX(0)}20%,55%{transform:translateX(4px)}64%,100%{transform:translateX(0)}}
+
+.constant{border:3px solid var(--saffron);background:rgba(242,130,47,.06);padding:clamp(22px,4vw,40px);margin-bottom:clamp(34px,6vh,66px)}
+.constant .k{font-size:var(--t-lbl);letter-spacing:.24em;text-transform:uppercase;font-weight:600;color:var(--saffron)}
+.constant h3{font-size:clamp(22px,3.8vw,36px);font-weight:700;letter-spacing:-.03em;line-height:1.12;margin-top:10px;max-width:21ch}
+.thread{display:flex;margin-top:26px;border:2px solid var(--line);flex-wrap:wrap}
+.tcell{flex:1;min-width:118px;padding:16px 12px;border-right:1px solid var(--line);text-align:center;
+ opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.in .tcell{opacity:1;transform:none}
+.in .tcell:nth-child(2){transition-delay:.12s}
+.in .tcell:nth-child(3){transition-delay:.24s}
+.in .tcell:nth-child(4){transition-delay:.36s}
+.tcell:last-child{border-right:none}
+.tcell svg{width:42px;height:42px;margin:0 auto 10px;display:block}
+.tcell .ty{font-size:var(--t-micro);letter-spacing:.18em;text-transform:uppercase;font-weight:600;opacity:.55}
+.tcell .tw{font-size:12px;font-weight:400;opacity:.8;margin-top:4px;line-height:1.5}
+
+.fail{border-left:5px solid var(--saffron);padding:4px 0 4px 20px;margin-bottom:clamp(34px,6vh,66px);max-width:60ch}
+.fail .k{font-size:var(--t-lbl);letter-spacing:.22em;text-transform:uppercase;font-weight:600;color:var(--saffron)}
+.fail p{margin-top:10px;font-weight:300;line-height:1.75;opacity:.88}
+.fail b{font-weight:600;opacity:1}
+
+.handoff{border:4px solid var(--line);padding:clamp(28px,5vw,56px);text-align:center;margin-bottom:clamp(50px,9vh,110px)}
+.handoff h3{font-size:clamp(24px,4.4vw,42px);font-weight:700;letter-spacing:-.035em;line-height:1.1;max-width:20ch;margin:0 auto}
+.handoff p{margin-top:16px;font-weight:300;opacity:.82;max-width:44ch;margin-inline:auto}
+.btn{margin-top:26px;background:var(--fg);color:var(--bg);border:3px solid var(--fg);cursor:pointer;
+ font-family:var(--f);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;padding:14px 28px;font-weight:600;transition:.2s}
+.btn:hover{background:var(--saffron);border-color:var(--saffron);color:#14120C;transform:translateY(-2px)}
+
+.pre{position:fixed;inset:0;z-index:250;background:var(--bg);display:grid;place-items:center;
+ opacity:0;pointer-events:none;transition:opacity .32s ease}
+.pre.run{opacity:1;pointer-events:all}
+.pre-bands{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:180px;display:flex;flex-direction:column;opacity:.13}
+.pre-bands i{flex:1;transform:scaleX(0);transform-origin:left}
+.pre.run .pre-bands i:nth-child(1){background:var(--saffron);animation:pband 1.1s cubic-bezier(.6,0,.3,1) infinite}
+.pre.run .pre-bands i:nth-child(2){background:#FFFDF7;animation:pband 1.1s cubic-bezier(.6,0,.3,1) .1s infinite}
+.pre.run .pre-bands i:nth-child(3){background:var(--green);animation:pband 1.1s cubic-bezier(.6,0,.3,1) .2s infinite}
+@keyframes pband{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}
+ 55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+.pre-wheel{width:116px;height:116px;position:relative;z-index:2;overflow:visible}
+.pre-wheel .ring{fill:none;stroke:url(#tri);stroke-width:2.2;stroke-linecap:round;stroke-dasharray:327;stroke-dashoffset:327}
+.pre.run .pre-wheel .ring{animation:drawring 1.15s cubic-bezier(.5,0,.2,1) infinite}
+@keyframes drawring{0%{stroke-dashoffset:327}55%{stroke-dashoffset:0}100%{stroke-dashoffset:-327}}
+.pre-wheel .sp{stroke:url(#tri);stroke-width:1.5;opacity:0;transform-origin:60px 60px}
+.pre.run .pre-wheel .sp{animation:spk 1.15s ease-in-out infinite}
+@keyframes spk{0%,100%{opacity:0;transform:scale(.55)}45%{opacity:.95;transform:scale(1)}}
+.pre-wheel .hub{fill:var(--saffron)}
+.pre.run .pre-wheel{animation:turn 3.4s linear infinite}
+@keyframes turn{to{transform:rotate(360deg)}}
+.pre-txt{position:absolute;bottom:calc(50% - 108px);left:0;right:0;text-align:center;z-index:2;
+ font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;font-weight:600;opacity:.62}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+  .rv,.tcell{opacity:1;transform:none}
+  .yr{opacity:.16;transform:none}
+  .slip,.stamp,.btnled,.fadein{opacity:1}
+  .draw{stroke-dashoffset:0}
+  .pre{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="pre" id="pre" aria-hidden="true">
+  <div class="pre-bands"><i></i><i></i><i></i></div>
+  <svg class="pre-wheel" viewBox="0 0 120 120" fill="none">
+    <defs><linearGradient id="tri" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F2822F"/><stop offset="50%" stop-color="#FFFDF7"/><stop offset="100%" stop-color="#3FB184"/>
+    </linearGradient></defs>
+    <circle class="ring" cx="60" cy="60" r="52"/>
+    <g id="pw"></g>
+    <circle class="hub" cx="60" cy="60" r="5"/>
+  </svg>
+  <div class="pre-txt">Opening the first brief</div>
+</div>
+
+<div class="wrap">
+<div class="timeline">
+  <div class="rail" id="rail"></div>
+  <div class="col">
+
+  <section class="intro">
+    <span class="tag">Before you play</span>
+    <h1>How do you vote<br>if you <span class="o">cannot read</span><br>the ballot?</h1>
+    <p class="lede">In 1951 India gave the vote to every adult at once — no property test, no education test, no phase-in. Britain and America spread suffrage across a century and still attached conditions. India did it in one step, four years after independence, with roughly twenty million displaced people still to enrol.<br><br>There was one problem nobody anywhere had solved.</p>
+    <div class="stats">
+      <div class="st"><b>173,212,343</b><span>registered electors — about a sixth of the world</span></div>
+      <div class="st"><b>18.33%</b><span>literacy. Around 85 in 100 could not read a name</span></div>
+      <div class="st"><b>489</b><span>seats · 1,874 candidates</span></div>
+      <div class="st"><b>200,000+</b><span>polling stations, Oct 1951 – Feb 1952</span></div>
+    </div>
+  </section>
+
+  <section class="era" data-era>
+    <span class="yr">1951</span>
+    <div class="rv"><span class="kick">Act one · The Balloting System</span>
+    <h2>The symbol was on the box.</h2></div>
+    <p class="txt rv d1">Not on the paper. Every candidate got <b>their own ballot box</b>, standing in a screened compartment, each labelled with that candidate's name and their picture — a pair of bullocks, a hut, a lamp.<br><br>The voter was handed a slip carrying <b>nothing but a serial number</b>. No names, no symbols, nothing to read at all. You walked in and dropped the blank slip into the box under the right picture.<br><br>Reading was removed from the act of voting entirely. Recognition replaced it.</p>
+    <div class="stage rv d2">
+      <svg viewBox="0 0 520 230" aria-label="Three ballot boxes labelled with symbols; a blank slip drops into the middle one">
+        <g><rect class="boxline boxfill draw s1" style="--l:460" x="30" y="90" width="120" height="110"></rect>
+          <rect class="boxline draw s1" style="--l:140" x="60" y="82" width="60" height="10"></rect>
+          <path class="boxline fadein" d="M66 140 h48 M72 140 v-14 h36 v14 M72 126 l18 -16 l18 16"></path>
+          <text class="lbl fadein" x="90" y="192" text-anchor="middle">HUT</text></g>
+        <g><rect class="boxline boxfill draw s2 chosen" style="--l:460" x="200" y="90" width="120" height="110"></rect>
+          <rect class="boxline draw s2 chosen" style="--l:140" x="230" y="82" width="60" height="10"></rect>
+          <path class="boxline fadein chosen" d="M246 154 h28 M250 154 c0 -12 20 -12 20 0 M260 142 v-10 M254 132 h12"></path>
+          <text class="lbl fadein" x="260" y="192" text-anchor="middle">LAMP</text>
+          <g class="slip"><rect class="paper" x="240" y="34" width="40" height="30"></rect>
+            <line class="ink" x1="248" y1="52" x2="272" y2="52" stroke-width="1.6"></line></g></g>
+        <g><rect class="boxline boxfill draw s3" style="--l:460" x="370" y="90" width="120" height="110"></rect>
+          <rect class="boxline draw s3" style="--l:140" x="400" y="82" width="60" height="10"></rect>
+          <path class="boxline fadein" d="M400 148 h52 M406 148 v-8 M422 148 v-8 M400 140 c8 -14 22 -14 30 0 M430 140 c8 -14 22 -14 30 0"></path>
+          <text class="lbl fadein" x="430" y="192" text-anchor="middle">BULLOCKS</text></g>
+        <text class="lbl fadein" x="260" y="22" text-anchor="middle" style="opacity:.4">SLIP CARRIES ONLY A SERIAL NUMBER</text>
+      </svg>
+    </div>
+  </section>
+
+  <section class="era" data-era>
+    <span class="yr">1962</span>
+    <div class="rv"><span class="kick">Act two · The Marking System</span>
+    <h2>The symbol moved onto the paper.</h2></div>
+    <p class="txt rv d1">From the third general election the boxes collapsed into one. A <b>single ballot paper</b> now listed every candidate, each beside their picture, and the voter marked their choice with an arrow-cross rubber stamp before folding it into one common box.<br><br>Cheaper, faster, and far less to carry up a mountain. This is the ballot most Indians picture when they picture a ballot, and it ran for four decades.</p>
+    <div class="stage rv d2">
+      <svg viewBox="0 0 520 250" aria-label="A single ballot paper listing candidates with symbols; a stamp marks one row">
+        <rect class="paper draw s1" style="--l:940" x="120" y="16" width="280" height="180" stroke="#EFE9DA" stroke-width="2"></rect>
+        <line class="ink draw s1" style="--l:260" x1="136" y1="42" x2="384" y2="42" stroke-width="2.6"></line>
+        <rect class="rowhi" x="120" y="92" width="280" height="34"></rect>
+        <g class="fadein">
+          <g transform="translate(140,58)">
+            <path class="ink" d="M4 16 h26 M8 16 v-10 h18 v10 M8 6 l9 -9 l9 9"></path>
+            <line class="ink" x1="52" y1="10" x2="150" y2="10" stroke-width="1.6" opacity=".45"></line>
+            <rect class="ink" x="196" y="0" width="22" height="22" stroke-width="1.8"></rect></g>
+          <g transform="translate(140,96)">
+            <path class="ink" d="M4 18 h24 M8 18 c0 -10 16 -10 16 0 M16 8 v-9 M11 -1 h10"></path>
+            <line class="ink" x1="52" y1="10" x2="150" y2="10" stroke-width="1.6" opacity=".45"></line>
+            <rect class="ink" x="196" y="0" width="22" height="22" stroke-width="1.8"></rect></g>
+          <g transform="translate(140,134)">
+            <path class="ink" d="M2 14 h28 M6 14 v-6 M18 14 v-6 M2 8 c6 -11 16 -11 22 0"></path>
+            <line class="ink" x1="52" y1="10" x2="150" y2="10" stroke-width="1.6" opacity=".45"></line>
+            <rect class="ink" x="196" y="0" width="22" height="22" stroke-width="1.8"></rect></g>
+          <text class="lbl" x="260" y="222" text-anchor="middle" style="opacity:.45">ONE PAPER · ONE BOX · ONE STAMP</text>
+        </g>
+        <g class="stamp" transform="translate(347,107)">
+          <path d="M-9 0 l6 7 l12 -14" stroke="#F2822F" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="era" data-era>
+    <span class="yr">2001</span>
+    <div class="rv"><span class="kick">Act three · The machine</span>
+    <h2>The paper went away. The picture didn't.</h2></div>
+    <p class="txt rv d1">Electronic voting machines took over from 2001. No paper, no stamp, no folding — a row of buttons, and beside each one <b>the same kind of picture that was painted on a wooden box in 1951</b>.<br><br>Three completely different mechanisms across seventy years. The one element that survived all three was the symbol.</p>
+    <div class="stage rv d2">
+      <svg viewBox="0 0 520 220" aria-label="An electronic voting machine panel with symbols beside buttons; one button lights up">
+        <rect class="boxline boxfill draw s1" style="--l:940" x="120" y="16" width="280" height="170"></rect>
+        <line class="boxline draw s1" style="--l:290" x1="120" y1="46" x2="400" y2="46"></line>
+        <text class="lbl fadein" x="260" y="36" text-anchor="middle">BALLOT UNIT</text>
+        <g class="fadein">
+          <g transform="translate(148,64)">
+            <path class="boxline" d="M4 16 h26 M8 16 v-10 h18 v10 M8 6 l9 -9 l9 9"></path>
+            <line class="boxline" x1="52" y1="8" x2="150" y2="8" stroke-width="1.4" opacity=".3"></line>
+            <circle cx="196" cy="8" r="4" fill="#EFE9DA" opacity=".25"></circle>
+            <rect class="boxline" x="212" y="0" width="30" height="17" stroke-width="1.8"></rect></g>
+          <g transform="translate(148,148)">
+            <path class="boxline" d="M2 14 h28 M6 14 v-6 M18 14 v-6 M2 8 c6 -11 16 -11 22 0"></path>
+            <line class="boxline" x1="52" y1="8" x2="150" y2="8" stroke-width="1.4" opacity=".3"></line>
+            <circle cx="196" cy="8" r="4" fill="#EFE9DA" opacity=".25"></circle>
+            <rect class="boxline" x="212" y="0" width="30" height="17" stroke-width="1.8"></rect></g>
+          <g transform="translate(148,106)">
+            <path class="boxline" d="M4 18 h24 M8 18 c0 -10 16 -10 16 0 M16 8 v-9 M11 -1 h10"></path>
+            <line class="boxline" x1="52" y1="8" x2="150" y2="8" stroke-width="1.4" opacity=".3"></line>
+            <circle class="btnled" cx="196" cy="8" r="5"></circle>
+            <circle cx="196" cy="8" r="4" fill="#EFE9DA" opacity=".25"></circle>
+            <rect class="boxline press" x="212" y="0" width="30" height="17" stroke-width="1.8"></rect></g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="era" data-era style="border-bottom:3px solid var(--line)">
+    <div class="constant rv">
+      <span class="k">The throughline</span>
+      <h3>The mechanism changed three times. The picture never left.</h3>
+      <div class="thread">
+        <div class="tcell"><svg viewBox="0 0 40 40"><path d="M8 28 h24 M12 28 c0 -13 16 -13 16 0 M20 15 v-11 M14 4 h12" stroke="#F2822F" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+          <div class="ty">1951</div><div class="tw">painted on a wooden box</div></div>
+        <div class="tcell"><svg viewBox="0 0 40 40"><path d="M8 28 h24 M12 28 c0 -13 16 -13 16 0 M20 15 v-11 M14 4 h12" stroke="#EFE9DA" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+          <div class="ty">1962</div><div class="tw">printed on the paper</div></div>
+        <div class="tcell"><svg viewBox="0 0 40 40"><path d="M8 28 h24 M12 28 c0 -13 16 -13 16 0 M20 15 v-11 M14 4 h12" stroke="#3FB184" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+          <div class="ty">2001</div><div class="tw">beside a button</div></div>
+        <div class="tcell"><svg viewBox="0 0 40 40"><path d="M8 28 h24 M12 28 c0 -13 16 -13 16 0 M20 15 v-11 M14 4 h12" stroke="#8B9CE0" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+          <div class="ty">Today</div><div class="tw">still there</div></div>
+      </div>
+      <p class="txt" style="margin-top:24px">India's electorate can now largely read. The symbols stayed anyway. <b>The thing built for the person at the margin became the design everyone kept.</b></p>
+    </div>
+
+    <div class="fail rv d1">
+      <span class="k">And the part they got wrong</span>
+      <p>While preparing the rolls, the Commission found enormous numbers of women enrolled not by name but as <b>"A's mother"</b> or <b>"B's wife"</b> — unwilling to give their names to a stranger. Sukumar Sen ruled that a name is essential to identity and must appear. <b>Roughly 2.8 million women were struck off and could not vote</b> in the first election.<br><br>The same Commission that solved brilliantly for non-literacy failed to solve for this. Designing for the citizen you actually have is hard, and they did not get all of it right.</p>
+    </div>
+
+    <div class="handoff rv d2">
+      <h3>Somebody had to draw those pictures.</h3>
+      <p>Six briefs. Four voters who cannot read a word of it. Find out whether what is obvious to you is obvious to anyone else.</p>
+      <button class="btn" id="go">Take the first brief &rarr;</button>
+    </div>
+  </section>
+
+  </div>
+</div>
+</div>
+
+<script>
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+(() => { let g = '';
+  for (let i = 0; i < 24; i++)
+    g += '<line class="sp" x1="60" y1="14" x2="60" y2="52" transform="rotate(' + (i*15) + ' 60 60)" style="animation-delay:' + ((i%12)*.035) + 's"></line>';
+  document.getElementById('pw').innerHTML = g;
+})();
+
+const eras = [].slice.call(document.querySelectorAll('[data-era]'));
+const io = new IntersectionObserver(function (es) {
+  es.forEach(function (e) { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.2, rootMargin: '0px 0px -6% 0px' });
+eras.forEach(function (el) { io.observe(el); });
+
+const rail = document.getElementById('rail');
+eras.forEach(function (el) {
+  const n = document.createElement('span');
+  n.className = 'node';
+  rail.appendChild(n);
+  el._node = n;
+});
+function layout() {
+  const rt = rail.getBoundingClientRect().top + scrollY;
+  eras.forEach(function (el) {
+    const t = el.getBoundingClientRect().top + scrollY;
+    el._node.style.top = (t - rt + 30) + 'px';
+  });
+}
+function onScroll() {
+  const box = rail.getBoundingClientRect();
+  const p = Math.max(0, Math.min(1, (innerHeight * 0.55 - box.top) / box.height));
+  document.documentElement.style.setProperty('--p', p.toFixed(4));
+  eras.forEach(function (el) {
+    const r = el.getBoundingClientRect();
+    el._node.classList.toggle('lit', r.top < innerHeight * 0.6 && r.bottom > innerHeight * 0.25);
+  });
+}
+addEventListener('scroll', onScroll, { passive: true });
+addEventListener('resize', function () { layout(); onScroll(); });
+layout(); onScroll();
+
+document.getElementById('go').onclick = function () {
+  if (reduce) { alert('In the app: scrolls to the game.'); return; }
+  const pre = document.getElementById('pre');
+  pre.classList.add('run');
+  setTimeout(function () {
+    pre.classList.remove('run');
+    alert('In the app: the game starts here.');
+  }, 900);
+};
+</script>
+</body>
+</html>

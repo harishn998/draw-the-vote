@@ -10,6 +10,7 @@ import { ChakraBg, Wipe } from "@/components/Chakra";
 import { Studio } from "@/components/Studio";
 import { Readings, Score, type Card } from "@/components/Verdict";
 import { Ballot } from "@/components/Ballot";
+import { History } from "@/components/History";
 import { PARTIES } from "@/components/parties";
 
 type Scene = "s0" | "sr" | "se";
@@ -25,6 +26,7 @@ export default function Home() {
   const reduce = useReducedMotion();
 
   const [scene, setScene] = useState<Scene>("s0");
+  const [history, setHistory] = useState(true); // the read-first section owns the first screen
   const [pre, setPre] = useState({ run: false, label: "Printing" });
   const [wipe, setWipe] = useState(true);
   const [theme, setTheme] = useState("chakra");
@@ -118,6 +120,28 @@ export default function Home() {
     },
     [show]
   );
+
+  /* ── the history section hands over straight to Brief 01 ──
+     It has already covered the swap with its own preloader, so this must not
+     run `show()` and stack a second one on top. ── */
+  const startFromHistory = useCallback(() => {
+    clearTimers();
+    setBusy(false);
+    setCards(null);
+    setGot(null);
+    setErr("");
+    setStampIdx(-1);
+    setRound(0);
+    setHm("Brief 1 · Election Commission · 1951");
+    setHistory(false);
+    setScene("sr");
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
+  const openHistory = useCallback(() => {
+    setHistory(true);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
 
   const finishRound = useCallback(
     (readings: Reading[], score: number) => {
@@ -259,6 +283,9 @@ export default function Home() {
             />
           ))}
         </span>
+        <button type="button" className="btn sm gh" onClick={openHistory}>
+          History
+        </button>
         <span className="hm">{hm}</span>
         <span className="cnt">
           <b ref={votesEl}>0</b>
@@ -266,7 +293,10 @@ export default function Home() {
         </span>
       </header>
 
-      <div className="wrap">
+      {history && <History onStart={startFromHistory} />}
+
+      {/* hidden, not unmounted — a trip back to the history mid-game keeps the pad */}
+      <div className="wrap" style={history ? { display: "none" } : undefined}>
         {/* ══ the invitation ══ */}
         <section className={`scene${scene === "s0" ? " on" : ""}`}>
           <span className="tag fade" style={{ animationDelay: "1.15s" }}>
