@@ -328,6 +328,11 @@ footer{border-top:3px solid var(--line);padding:14px var(--pad);font-size:var(--
 .history .in .chosen{animation:glow 5.5s ease 1.5s infinite}
 @keyframes glow{0%,20%{stroke:var(--fg)}30%,42%{stroke:var(--saffron)}55%,100%{stroke:var(--fg)}}
 
+.history .in .chosen.draw{
+  animation: dash 1.15s cubic-bezier(.5,0,.2,1) .24s forwards,
+             glow 5.5s ease 1.5s infinite;
+}
+
 .history .stamp{opacity:0;transform-origin:center}
 .history .in .stamp{animation:slam 5.5s cubic-bezier(.3,1.7,.4,1) 1.6s infinite}
 @keyframes slam{0%{opacity:0;transform:translateY(-52px) scale(2)}10%{opacity:1;transform:translateY(0) scale(1)}

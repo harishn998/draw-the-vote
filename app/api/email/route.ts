@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "Draw the Vote <onboarding@resend.dev>", // swap for your verified domain
+      from: "Draw the Vote (Election Commission) <agent@ipqc.in>", // swap for your verified domain
       to,
       subject: `Your ballot paper — ${score}/24 read correctly`,
       html,
