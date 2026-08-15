@@ -10,8 +10,9 @@ import { PARTIES } from "./parties";
 import { buildBallotPng } from "./ballotPng";
 
 // The bot on the other end is app/api/telegram/route.ts.
-const BOT_URL = process.env.NEXT_PUBLIC_TELEGRAM_BOT || "https://t.me/YOUR_BOT_HANDLE";
-const BOT_HANDLE = `@${BOT_URL.replace(/\/+$/, "").split("/").pop()}`;
+// Exported so the history handoff offers the same address, from one definition.
+export const BOT_URL = process.env.NEXT_PUBLIC_TELEGRAM_BOT || "https://t.me/YOUR_BOT_HANDLE";
+export const BOT_HANDLE = `@${BOT_URL.replace(/\/+$/, "").split("/").pop()}`;
 
 const EPILOGUE =
   "India's first general election ran from October 1951 to February 1952 — the largest exercise of its kind ever attempted anywhere. Ballot boxes travelled by elephant, camel and boat. Parties were given pictures because most voters could not read names, and that one decision is why universal adult franchise worked here from the very first vote instead of being rationed out by literacy. The pictures are still on the ballot today.";

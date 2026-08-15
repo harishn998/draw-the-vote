@@ -5,7 +5,9 @@
 // --p custom property, and nodes that light as their act passes the viewport.
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Preloader, useReducedMotion } from "@/components/Preloader";
+import { BOT_URL, BOT_HANDLE } from "@/components/Ballot";
 
 /** stroke-dasharray/offset length for a .draw path */
 const L = (n: number) => ({ "--l": n }) as CSSProperties;
@@ -585,9 +587,34 @@ export function History({ onStart }: { onStart: () => void }) {
                     Six briefs. Four voters who cannot read a word of it. Find out whether what is
                     obvious to you is obvious to anyone else.
                   </p>
-                  <button type="button" className="btn" onClick={go}>
-                    Take the first brief →
-                  </button>
+                  <div className="ways">
+                    <div className="way">
+                      <div className="wl">On screen</div>
+                      <p className="wt">Draw with your mouse. Six briefs, four voters.</p>
+                      <button type="button" className="btn" onClick={go}>
+                        Take the first brief →
+                      </button>
+                    </div>
+                    <div className="way">
+                      <div className="wl">On paper</div>
+                      <p className="wt">
+                        Draw with an actual pen. Photograph it. The Commission writes back.
+                      </p>
+                      {/* white block behind it — a code on the navy will not scan */}
+                      <div className="qr">
+                        <QRCodeSVG
+                          value={BOT_URL}
+                          size={110}
+                          bgColor="#FFFDF7"
+                          fgColor="#14120C"
+                          title={`Telegram bot ${BOT_HANDLE}`}
+                        />
+                      </div>
+                      <a className="wh" href={BOT_URL} target="_blank" rel="noopener noreferrer">
+                        {BOT_HANDLE}
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </section>
             </div>

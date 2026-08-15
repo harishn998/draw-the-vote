@@ -376,6 +376,24 @@ footer{border-top:3px solid var(--line);padding:14px var(--pad);font-size:var(--
  font-family:var(--f);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;padding:14px 28px;font-weight:600;transition:.2s}
 .history .btn:hover{background:var(--saffron);border-color:var(--saffron);color:#14120C;transform:translateY(-2px)}
 
+/* the two ways in, inside the handoff card — its own border and padding stay put */
+.history .ways{display:grid;grid-template-columns:1fr 1fr;align-items:start;margin-top:clamp(26px,4vw,36px)}
+.history .way{padding:0 clamp(14px,2.6vw,28px)}
+.history .way+.way{border-left:1px solid var(--line)}
+.history .wl{font-size:var(--t-lbl);letter-spacing:.22em;text-transform:uppercase;font-weight:600;opacity:.6}
+/* .way scopes it past .handoff p, which is one element-selector heavier than .wt alone */
+.history .way .wt{margin-top:9px;font-size:13.5px;font-weight:300;opacity:.82;line-height:1.65;max-width:30ch;margin-inline:auto}
+.history .way .btn{margin-top:18px}
+.history .qr{margin-top:18px;background:var(--sheet);padding:10px;width:fit-content;margin-inline:auto;line-height:0}
+.history .wh{display:inline-block;margin-top:10px;color:var(--fg);opacity:.8;font-size:var(--t-lbl);
+ letter-spacing:.2em;text-transform:uppercase;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.history .wh:hover{opacity:1;color:var(--saffron)}
+@media(max-width:700px){
+  .history .ways{grid-template-columns:1fr}
+  .history .way{padding:0}
+  .history .way+.way{border-left:none;border-top:1px solid var(--line);margin-top:28px;padding-top:28px}
+}
+
 @media(prefers-reduced-motion:reduce){
   .history *,.history *::before,.history *::after{animation:none!important;transition-duration:.01ms!important}
   .history .rv,.history .tcell{opacity:1;transform:none}
